@@ -22,6 +22,7 @@ const state = {
 };
 
 const audio = new AudioEngine();
+let   notation = null;
 
 // ── DOM Refs ──────────────────────────────────────────────────────────────────
 
@@ -40,7 +41,9 @@ const elPhaseInfo     = document.getElementById('phase-info');
 const elPhaseChips    = document.getElementById('phase-chips');
 const elScore         = document.getElementById('score');
 const elScoreHeader   = document.getElementById('score-header');
-const elScoreGrid     = document.getElementById('score-grid');
+const elScoreGrid         = document.getElementById('score-grid');
+const elNotation          = document.getElementById('notation');
+const elNotationContainer = document.getElementById('notation-container');
 
 // ── Note Palette ──────────────────────────────────────────────────────────────
 
@@ -125,11 +128,14 @@ elBtnGenerate.addEventListener('click', () => {
     repsPerStep,
   });
 
+  notation = new NotationRenderer(elNotationContainer);
+
   buildTimeline(state.study);
-  buildScoreGrid(state.study, 0);
+  buildScoreGrid(state.study, 0);   // also calls notation.renderPhase via the hook below
 
   elTimeline.hidden  = false;
   elScore.hidden     = false;
+  elNotation.hidden  = false;
   elBtnPlay.disabled = false;
   elBtnStop.disabled = true;
 });
@@ -191,6 +197,9 @@ function buildScoreGrid(study, phaseIdx) {
     row.appendChild(cells);
     elScoreGrid.appendChild(row);
   }
+
+  // Render notation for this phase (no-op if VexFlow unavailable)
+  if (notation) notation.renderPhase(study, phaseIdx);
 }
 
 function highlightBeat(phase, beat) {
@@ -207,6 +216,8 @@ function highlightBeat(phase, beat) {
     );
     if (cell) cell.classList.add('playing');
   });
+
+  if (notation) notation.highlightBeat(phase, beat);
 }
 
 // ── Timeline ──────────────────────────────────────────────────────────────────
@@ -361,6 +372,7 @@ function stopPlayback() {
     state.playback.stop();
     state.playback = null;
   }
+  if (notation) notation.clearHighlight();
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

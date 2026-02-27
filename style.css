@@ -255,6 +255,19 @@ section h2 {
   color: var(--border);
 }
 
+/* ── Notation ──────────────────────────────────────────────────── */
+#notation-container {
+  overflow-x: auto;
+  /* VexFlow renders inline SVG — let it breathe */
+  padding-bottom: 0.25rem;
+}
+
+#notation-container svg {
+  display: block;
+  /* Don't let the browser scale it; VexFlow sizes it exactly */
+  max-width: none;
+}
+
 /* ── Timeline ──────────────────────────────────────────────────── */
 .phase-info {
   font-size: 0.8125rem;

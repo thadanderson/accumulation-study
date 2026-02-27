@@ -61,6 +61,12 @@
       <div id="score-grid"></div>
     </section>
 
+    <!-- ── Notation ──────────────────────────────────────── -->
+    <section id="notation" hidden>
+      <h2>Notation</h2>
+      <div id="notation-container"></div>
+    </section>
+
     <!-- ── Timeline ──────────────────────────────────────── -->
     <section id="timeline" hidden>
       <h2>Timeline</h2>
@@ -71,6 +77,7 @@
   </main>
 
   <!-- Load order matters: utils → composition → stubs → main -->
+  <script src="https://cdn.jsdelivr.net/npm/vexflow@4/build/cjs/vexflow.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tone@14/build/Tone.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/composition.js"></script>
