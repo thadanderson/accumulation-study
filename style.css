@@ -1,0 +1,297 @@
+/* ── Design tokens ─────────────────────────────────────────────── */
+:root {
+  --accent:       #2563eb;
+  --accent-light: #dbeafe;
+  --accent-dark:  #1d4ed8;
+  --text:         #111827;
+  --muted:        #6b7280;
+  --border:       #e5e7eb;
+  --bg:           #f9fafb;
+  --surface:      #ffffff;
+  --cell:         2.5rem;   /* note-cell width & height */
+  --radius:       6px;
+  --font:         system-ui, -apple-system, sans-serif;
+}
+
+/* ── Reset ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); color: var(--text); background: var(--bg); }
+
+/* ── Header ────────────────────────────────────────────────────── */
+header {
+  padding: 2rem 2rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+header h1 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.subtitle {
+  color: var(--muted);
+  font-size: 0.8125rem;
+  margin-top: 0.25rem;
+}
+
+/* ── Layout ────────────────────────────────────────────────────── */
+main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+section h2 {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+/* ── Controls ──────────────────────────────────────────────────── */
+#controls { display: flex; flex-direction: column; gap: 1rem; }
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.control-row label {
+  font-size: 0.8125rem;
+  min-width: 9rem;
+  color: var(--muted);
+}
+
+.control-row input[type="number"] {
+  width: 5rem;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--bg);
+}
+.control-row input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* ── Phrase Builder ────────────────────────────────────────────── */
+#phrase-builder { display: flex; flex-direction: column; gap: 0.625rem; }
+
+.row-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.phrase-actions { display: flex; gap: 0.375rem; margin-left: auto; }
+.phrase-actions button {
+  padding: 0.2rem 0.625rem;
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  cursor: pointer;
+  color: var(--text);
+}
+.phrase-actions button:hover { border-color: var(--accent); color: var(--accent); }
+
+#note-palette {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+#note-palette button {
+  width: var(--cell);
+  height: var(--cell);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+#note-palette button:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+#phrase-preview {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  min-height: 2.5rem;
+  padding: 0.5rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  align-items: center;
+}
+
+.phrase-hint {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.phrase-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s;
+}
+.phrase-chip:hover { background: var(--accent-dark); }
+
+/* ── Action Row ────────────────────────────────────────────────── */
+.action-row { display: flex; gap: 0.5rem; }
+.action-row button {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.action-row button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.action-row button.primary:hover:not(:disabled) {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+.action-row button:not(.primary):hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.action-row button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Score ─────────────────────────────────────────────────────── */
+.score-header {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+#score-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.performer-row { display: flex; align-items: center; gap: 0.75rem; }
+
+.performer-label {
+  min-width: 2.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: right;
+}
+
+.note-cells { display: flex; gap: 0.3125rem; flex-wrap: wrap; }
+
+.note-cell {
+  width: var(--cell);
+  height: var(--cell);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  background: var(--bg);
+  color: var(--muted);
+  transition: background 0.08s, color 0.08s, border-color 0.08s;
+}
+
+/* Note is in the performer's current pattern */
+.note-cell.active-voice {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Note is sounding right now */
+.note-cell.playing {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* Slot not yet accumulated */
+.note-cell.silent {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--border);
+}
+
+/* ── Timeline ──────────────────────────────────────────────────── */
+.phase-info {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  margin-bottom: 0.875rem;
+  min-height: 1.125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+#phase-chips { display: flex; gap: 0.375rem; flex-wrap: wrap; }
+
+.phase-chip {
+  width: 1.875rem;
+  height: 1.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  font-size: 0.6875rem;
+  background: var(--bg);
+  color: var(--muted);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+/* Peak phase gets a double ring */
+.phase-chip[data-peak] { border-width: 2px; border-color: var(--accent-light); }
+
+.phase-chip.done {
+  background: var(--accent-light);
+  border-color: var(--accent-light);
+  color: var(--accent);
+}
+
+.phase-chip.current {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
