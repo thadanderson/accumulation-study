@@ -1,52 +1,93 @@
 /**
  * audio.js
- * AudioEngine stub — interface defined, implementation pending.
+ * AudioEngine — Tone.js implementation.
  *
- * TODO: Implement with Tone.js
- *   import * as Tone from 'https://cdn.jsdelivr.net/npm/tone@latest/build/Tone.js';
+ * Each performer gets its own Synth voice, spread across the stereo field.
+ * All voices share a reverb send for a subtle sense of space.
  *
- * Each performer will get its own synth voice so timbre and panning can
- * distinguish voices (e.g., slightly different oscillator types or pan positions).
+ * Depends on Tone.js loaded before this script via CDN in index.html.
  */
 class AudioEngine {
   constructor() {
-    this._ready = false;
-    // TODO: this._synths = [];  // one Tone.Synth per performer
+    this._ready         = false;
+    this._synths        = [];
+    this._reverb        = null;
+    this._numPerformers = 0;
   }
 
   /**
-   * init — must be called inside a user-gesture handler to unlock AudioContext.
+   * init — unlock the AudioContext and build synth voices.
+   * Must be called inside a user-gesture handler (the Play button click).
+   * Safe to call again if numPerformers changes; disposes and recreates voices.
+   *
+   * @param {number} numPerformers  Voices to create (1–8)
    * @returns {Promise<void>}
    */
-  async init() {
-    if (this._ready) return;
-    // TODO: await Tone.start();
-    // TODO: this._synths = Array.from({ length: 8 }, (_, i) =>
-    //   new Tone.Synth({ oscillator: { type: 'triangle' } })
-    //     .toDestination()
-    // );
+  async init(numPerformers = 4) {
+    // Unlock AudioContext — safe to call multiple times, resolves immediately
+    // after the first successful call.
+    await Tone.start();
+
+    // Nothing to do if already set up for this performer count
+    if (this._ready && numPerformers === this._numPerformers) return;
+
+    // Tear down previous voices
+    this._synths.forEach(s => s.dispose());
+    if (this._reverb) this._reverb.dispose();
+
+    this._numPerformers = numPerformers;
+
+    // Shared reverb — subtle room without muddying the polyphony
+    this._reverb = new Tone.Reverb({ decay: 1.2, wet: 0.15 });
+    await this._reverb.ready;   // IR generation is async
+    this._reverb.toDestination();
+
+    // One synth per performer, spread left-to-right across the stereo field
+    this._synths = Array.from({ length: numPerformers }, (_, i) => {
+      // Pan range: -0.7 (left) → +0.7 (right)
+      const pan = numPerformers > 1
+        ? -0.7 + (i / (numPerformers - 1)) * 1.4
+        : 0;
+
+      const panner = new Tone.Panner(pan).connect(this._reverb);
+
+      // Alternate triangle/sine so adjacent voices have slightly different timbre
+      return new Tone.Synth({
+        oscillator: { type: i % 2 === 0 ? 'triangle' : 'sine' },
+        envelope: {
+          attack:  0.01,
+          decay:   0.08,
+          sustain: 0.6,
+          release: 0.3,
+        },
+        volume: -14,
+      }).connect(panner);
+    });
+
     this._ready = true;
-    console.info('[AudioEngine] stub — audio not yet implemented (Tone.js pending)');
   }
 
   /**
-   * playNote — trigger a note on the given performer's synth voice.
+   * playNote — trigger a note on a performer's voice.
    * @param {number} performerIndex  0-indexed
-   * @param {string} note            e.g. 'C4'
-   * @param {number} durationMs      note duration in milliseconds
+   * @param {string} note            Tone.js note name, e.g. 'C4'
+   * @param {number} durationMs      Note duration in milliseconds
    */
   playNote(performerIndex, note, durationMs) {
     if (!this._ready) return;
-    // TODO: const duration = Tone.Time(durationMs / 1000).toNotation();
-    //       this._synths[performerIndex].triggerAttackRelease(note, duration);
+    const synth = this._synths[performerIndex];
+    if (!synth) return;
+    synth.triggerAttackRelease(note, durationMs / 1000, Tone.now());
   }
 
   /**
-   * stop — silence all voices immediately.
+   * stop — release all active voices immediately.
    */
   stop() {
     if (!this._ready) return;
-    // TODO: this._synths.forEach(s => s.triggerRelease());
-    //       Tone.Transport.stop();
+    const now = Tone.now();
+    this._synths.forEach(s => {
+      try { s.triggerRelease(now); } catch { /* already idle */ }
+    });
   }
 }

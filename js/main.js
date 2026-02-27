@@ -297,11 +297,11 @@ class Playback {
     highlightBeat(phase, beat);
     updateTimeline(study, phaseIdx, beat);
 
-    // Audio (stub — no-op until Tone.js is wired in)
-    // const notes = study.noteAtBeat(phaseIdx, beat);
-    // notes.forEach(({ performerIndex, note }) => {
-    //   if (note) audio.playNote(performerIndex, note, beatMs * 0.85);
-    // });
+    // Trigger audio for this beat
+    const notes = study.noteAtBeat(phaseIdx, beat);
+    notes.forEach(({ performerIndex, note }) => {
+      if (note) audio.playNote(performerIndex, note, beatMs * 0.85);
+    });
 
     // Advance cursor
     this._beat++;
@@ -341,7 +341,9 @@ class Playback {
 elBtnPlay.addEventListener('click', async () => {
   elBtnPlay.disabled = true;
   elBtnStop.disabled = false;
-  await audio.init();
+  elBtnPlay.textContent = 'Loading…';
+  await audio.init(state.study.numPerformers);
+  elBtnPlay.textContent = 'Play';
   startPlayback();
 });
 
