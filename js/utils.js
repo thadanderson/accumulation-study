@@ -55,6 +55,21 @@ function randomPhrase(len = 4, scale = SCALE) {
 }
 
 /**
+ * applySyncopation — converts a string[] phrase to {note, dur}[] by randomly
+ * assigning eighth-note duration (dur=1) to notes based on `probability`.
+ * Notes not syncopated keep quarter-note duration (dur=2).
+ * @param {string[]} phrase
+ * @param {number}   probability  0–1
+ * @returns {{ note: string, dur: number }[]}
+ */
+function applySyncopation(phrase, probability) {
+  return phrase.map(note => ({
+    note,
+    dur: Math.random() < probability ? 1 : 2,
+  }));
+}
+
+/**
  * bpmToMs — duration of one quarter-note beat in milliseconds.
  * @param {number} bpm
  * @returns {number}

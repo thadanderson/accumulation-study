@@ -26,10 +26,12 @@ let   notation = null;
 
 // ── DOM Refs ──────────────────────────────────────────────────────────────────
 
-const elNumPerformers = document.getElementById('numPerformers');
-const elBpm           = document.getElementById('bpm');
-const elRepsPerStep   = document.getElementById('repsPerStep');
-const elScaleSelect   = document.getElementById('scale-select');
+const elNumPerformers    = document.getElementById('numPerformers');
+const elBpm              = document.getElementById('bpm');
+const elRepsPerStep      = document.getElementById('repsPerStep');
+const elSyncopation      = document.getElementById('syncopation');
+const elSyncopationValue = document.getElementById('syncopation-value');
+const elScaleSelect      = document.getElementById('scale-select');
 const elNotePalette   = document.getElementById('note-palette');
 const elPhrasePreview = document.getElementById('phrase-preview');
 const elBtnRandom     = document.getElementById('btn-random-phrase');
@@ -70,6 +72,10 @@ elScaleSelect.addEventListener('change', () => {
   state.phrase = [];
   buildNotePalette();
   renderPhrasePreview();
+});
+
+elSyncopation.addEventListener('input', () => {
+  elSyncopationValue.textContent = `${elSyncopation.value}%`;
 });
 
 function addNote(label) {
@@ -134,9 +140,11 @@ elBtnGenerate.addEventListener('click', () => {
   const numPerformers = clamp(parseInt(elNumPerformers.value, 10), 2, 8);
   const bpm           = clamp(parseInt(elBpm.value, 10), 40, 240);
   const repsPerStep   = clamp(parseInt(elRepsPerStep.value, 10), 1, 8);
+  const probability   = parseInt(elSyncopation.value, 10) / 100;
+  const rhythmicPhrase = applySyncopation(state.phrase, probability);
 
   state.study = new AccumulationStudy({
-    phrase: [...state.phrase],
+    phrase: rhythmicPhrase,
     numPerformers,
     bpm,
     repsPerStep,
@@ -202,7 +210,8 @@ function buildScoreGrid(study, phaseIdx) {
         cell.classList.add('silent');
       } else {
         cell.classList.add('active-voice');
-        cell.textContent = pattern[slot];
+        cell.textContent = pattern[slot].note;
+        if (pattern[slot].dur === 1) cell.classList.add('dur-eighth');
       }
 
       cells.appendChild(cell);
@@ -216,22 +225,21 @@ function buildScoreGrid(study, phaseIdx) {
   if (notation) notation.renderPhase(study, phaseIdx);
 }
 
-function highlightBeat(phase, beat) {
+function highlightBeat(phaseIdx, tick) {
   // Clear previous highlight
   elScoreGrid.querySelectorAll('.note-cell.playing').forEach(c =>
     c.classList.remove('playing')
   );
 
-  phase.performers.forEach(({ performerIndex: pi, pattern }) => {
-    if (!pattern) return;
-    const slot = beat % pattern.length;
+  state.study.noteAtBeat(phaseIdx, tick).forEach(({ performerIndex: pi, noteIndex }) => {
+    if (noteIndex === null) return;
     const cell = elScoreGrid.querySelector(
-      `.note-cell[data-pi="${pi}"][data-slot="${slot}"]`
+      `.note-cell[data-pi="${pi}"][data-slot="${noteIndex}"]`
     );
     if (cell) cell.classList.add('playing');
   });
 
-  if (notation) notation.highlightBeat(phase, beat);
+  if (notation) notation.highlightBeat(state.study.phases[phaseIdx], tick);
 }
 
 // ── Timeline ──────────────────────────────────────────────────────────────────
@@ -259,7 +267,7 @@ function buildTimeline(study) {
 
 function updateTimeline(study, phaseIdx, beat) {
   const phase = study.phases[phaseIdx];
-  const rep   = Math.floor(beat / phase.maxPatternLen) + 1;
+  const rep   = Math.floor(beat / phase.maxPatternDuration) + 1;
   const totalReps = study.repsPerStep;
 
   elPhaseInfo.textContent =
@@ -316,10 +324,10 @@ class Playback {
     const phaseIdx   = this._phaseIdx;
     const beat       = this._beat;
     const phase      = study.phases[phaseIdx];
-    const beatMs     = bpmToMs(study.bpm);
+    const beatMs     = bpmToMs(study.bpm) / 2;  // eighth-note resolution
 
     // Visual update
-    highlightBeat(phase, beat);
+    highlightBeat(phaseIdx, beat);
     updateTimeline(study, phaseIdx, beat);
 
     // Trigger audio for this beat

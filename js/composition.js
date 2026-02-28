@@ -56,6 +56,10 @@ class AccumulationStudy {
     return this.phrase.slice(0, len);
   }
 
+  _patternDuration(pattern) {
+    return pattern ? pattern.reduce((s, n) => s + n.dur, 0) : 0;
+  }
+
   _buildForward() {
     const total = this.numPerformers + this.phraseLen - 1;
     const forward = [];
@@ -63,19 +67,25 @@ class AccumulationStudy {
     for (let step = 1; step <= total; step++) {
       const performers = [];
       let maxLen = 0;
+      let maxDur = 0;
 
       for (let pi = 0; pi < this.numPerformers; pi++) {
         const pattern = this._patternAt(step, pi);
         performers.push({ performerIndex: pi, pattern });
-        if (pattern && pattern.length > maxLen) maxLen = pattern.length;
+        if (pattern) {
+          if (pattern.length > maxLen) maxLen = pattern.length;
+          const dur = this._patternDuration(pattern);
+          if (dur > maxDur) maxDur = dur;
+        }
       }
 
       forward.push({
         step,
-        direction:     'accumulating',
+        direction:          'accumulating',
         performers,
-        maxPatternLen: maxLen,
-        durationBeats: maxLen * this.repsPerStep,
+        maxPatternLen:      maxLen,
+        maxPatternDuration: maxDur,
+        durationBeats:      maxDur * this.repsPerStep,
       });
     }
 
@@ -98,16 +108,22 @@ class AccumulationStudy {
   // ── Public API ──────────────────────────────────────────────────────────────
 
   /**
-   * noteAtBeat — which note each performer plays at beat `beat` in phase `phaseIdx`.
+   * noteAtBeat — which note each performer plays at eighth-note tick `tick` in phase `phaseIdx`.
    * @param {number} phaseIdx
-   * @param {number} beat      0-indexed within the phase
-   * @returns {{ performerIndex: number, note: string|null }[]}
+   * @param {number} tick      0-indexed eighth-note tick within the phase
+   * @returns {{ performerIndex: number, note: string|null, noteIndex: number|null }[]}
    */
-  noteAtBeat(phaseIdx, beat) {
-    return this.phases[phaseIdx].performers.map(({ performerIndex, pattern }) => ({
-      performerIndex,
-      note: pattern ? pattern[beat % pattern.length] : null,
-    }));
+  noteAtBeat(phaseIdx, tick) {
+    return this.phases[phaseIdx].performers.map(({ performerIndex, pattern }) => {
+      if (!pattern) return { performerIndex, note: null, noteIndex: null };
+      const totalDur = this._patternDuration(pattern);
+      let t = tick % totalDur, acc = 0, noteIndex = 0;
+      for (let i = 0; i < pattern.length; i++) {
+        if (t < acc + pattern[i].dur) { noteIndex = i; break; }
+        acc += pattern[i].dur;
+      }
+      return { performerIndex, note: pattern[noteIndex].note, noteIndex };
+    });
   }
 
   get totalPhases() { return this.phases.length; }

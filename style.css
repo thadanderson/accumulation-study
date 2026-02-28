@@ -91,6 +91,18 @@ section h2 {
   box-shadow: 0 0 0 3px var(--accent-light);
 }
 
+.control-row input[type="range"] {
+  width: 9rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.control-row span {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  min-width: 2.5rem;
+}
+
 /* ── Phrase Builder ────────────────────────────────────────────── */
 #phrase-builder { display: flex; flex-direction: column; gap: 0.625rem; }
 
@@ -294,6 +306,11 @@ section h2 {
   background: var(--bg);
   border-color: var(--border);
   color: var(--border);
+}
+
+/* Eighth-note duration — dashed border indicates shorter value */
+.note-cell.dur-eighth {
+  border-style: dashed;
 }
 
 /* ── Notation ──────────────────────────────────────────────────── */
