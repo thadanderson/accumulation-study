@@ -82,23 +82,31 @@
 
       <div class="action-row">
         <button id="btn-generate" type="button" class="primary">Generate</button>
-        <button id="btn-play"     type="button" class="primary" disabled>Play</button>
-        <button id="btn-stop"     type="button"                 disabled>Stop</button>
+        <div class="audio-preview">
+          <span class="audio-label">Audio preview</span>
+          <button id="btn-play" type="button" disabled>Play</button>
+          <button id="btn-stop" type="button" disabled>Stop</button>
+        </div>
       </div>
 
     </section>
 
-    <!-- ── Score ─────────────────────────────────────────── -->
-    <section id="score" hidden>
-      <h2>Score</h2>
-      <p id="score-header" class="score-header"></p>
-      <div id="score-grid"></div>
-    </section>
+    <!-- ── Score / Notation (tabbed) ──────────────────────── -->
+    <section id="score-notation" hidden>
+      <div class="tab-bar">
+        <button class="tab active" data-tab="notation">Notation</button>
+        <button class="tab"        data-tab="score">Score</button>
+      </div>
 
-    <!-- ── Notation ──────────────────────────────────────── -->
-    <section id="notation" hidden>
-      <h2>Notation</h2>
-      <div id="notation-container"></div>
+      <div id="tab-notation">
+        <div id="instrument-selectors"></div>
+        <div id="notation-container"></div>
+      </div>
+
+      <div id="tab-score" hidden>
+        <p id="score-header" class="score-header"></p>
+        <div id="score-grid"></div>
+      </div>
     </section>
 
     <!-- ── Timeline ──────────────────────────────────────── -->

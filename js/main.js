@@ -16,9 +16,11 @@ const MAX_PHRASE = 8;
 // ── App State ─────────────────────────────────────────────────────────────────
 
 const state = {
-  phrase:   [],     // string[] — the melodic cell being built
-  study:    null,   // AccumulationStudy | null
-  playback: null,   // Playback | null
+  phrase:          [],    // string[] — the melodic cell being built
+  study:           null,  // AccumulationStudy | null
+  playback:        null,  // Playback | null
+  instruments:     [],    // string[] of instrument IDs, one per performer
+  currentPhaseIdx: 0,     // tracks which phase is currently displayed
 };
 
 const audio = new AudioEngine();
@@ -39,14 +41,28 @@ const elBtnClear      = document.getElementById('btn-clear-phrase');
 const elBtnGenerate   = document.getElementById('btn-generate');
 const elBtnPlay       = document.getElementById('btn-play');
 const elBtnStop       = document.getElementById('btn-stop');
-const elTimeline      = document.getElementById('timeline');
-const elPhaseInfo     = document.getElementById('phase-info');
-const elPhaseChips    = document.getElementById('phase-chips');
-const elScore         = document.getElementById('score');
-const elScoreHeader   = document.getElementById('score-header');
-const elScoreGrid         = document.getElementById('score-grid');
-const elNotation          = document.getElementById('notation');
-const elNotationContainer = document.getElementById('notation-container');
+const elTimeline             = document.getElementById('timeline');
+const elPhaseInfo            = document.getElementById('phase-info');
+const elPhaseChips           = document.getElementById('phase-chips');
+const elScoreNotation        = document.getElementById('score-notation');
+const elTabNotation          = document.getElementById('tab-notation');
+const elTabScore             = document.getElementById('tab-score');
+const elInstrumentSelectors  = document.getElementById('instrument-selectors');
+const elScoreHeader          = document.getElementById('score-header');
+const elScoreGrid            = document.getElementById('score-grid');
+const elNotationContainer    = document.getElementById('notation-container');
+
+// ── Tab switching ──────────────────────────────────────────────────────────────
+
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    elTabNotation.hidden = tab !== 'notation';
+    elTabScore.hidden    = tab !== 'score';
+  });
+});
 
 // ── Note Palette ──────────────────────────────────────────────────────────────
 
@@ -153,17 +169,53 @@ elBtnGenerate.addEventListener('click', () => {
   notation = new NotationRenderer(elNotationContainer);
 
   buildTimeline(state.study);
-  buildScoreGrid(state.study, 0);   // also calls notation.renderPhase via the hook below
+  buildInstrumentSelectors(numPerformers);
 
-  elTimeline.hidden  = false;
-  elScore.hidden     = false;
-  elNotation.hidden  = false;
-  elBtnPlay.disabled = false;
-  elBtnStop.disabled = true;
+  // Reset active tab to Notation
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.tab[data-tab="notation"]').classList.add('active');
+  elTabNotation.hidden = false;
+  elTabScore.hidden    = true;
+
+  buildScoreGrid(state.study, 0);
+
+  elTimeline.hidden        = false;
+  elScoreNotation.hidden   = false;
+  elBtnPlay.disabled       = false;
+  elBtnStop.disabled       = true;
 });
 
 function clamp(v, lo, hi) {
   return Math.min(Math.max(v, lo), hi);
+}
+
+// ── Instrument Selectors ──────────────────────────────────────────────────────
+
+function buildInstrumentSelectors(numPerformers) {
+  elInstrumentSelectors.innerHTML = '';
+  state.instruments = Array(numPerformers).fill('concert');
+  for (let pi = 0; pi < numPerformers; pi++) {
+    const row = document.createElement('div');
+    row.className = 'instrument-row';
+    const lbl = document.createElement('span');
+    lbl.className   = 'performer-label';
+    lbl.textContent = `P${pi + 1}`;
+    const sel = document.createElement('select');
+    sel.dataset.pi = pi;
+    INSTRUMENTS.forEach(({ id, label }) => {
+      const opt = document.createElement('option');
+      opt.value       = id;
+      opt.textContent = label;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', () => {
+      state.instruments[pi] = sel.value;
+      if (notation) notation.renderPhase(state.study, state.currentPhaseIdx, state.instruments);
+    });
+    row.appendChild(lbl);
+    row.appendChild(sel);
+    elInstrumentSelectors.appendChild(row);
+  }
 }
 
 // ── Score Grid ────────────────────────────────────────────────────────────────
@@ -174,6 +226,7 @@ function clamp(v, lo, hi) {
  * Rebuilds on every phase change (cheap at musical tempos).
  */
 function buildScoreGrid(study, phaseIdx) {
+  state.currentPhaseIdx = phaseIdx;
   elScoreGrid.innerHTML = '';
   const phase = study.phases[phaseIdx];
 
@@ -222,7 +275,7 @@ function buildScoreGrid(study, phaseIdx) {
   }
 
   // Render notation for this phase (no-op if VexFlow unavailable)
-  if (notation) notation.renderPhase(study, phaseIdx);
+  if (notation) notation.renderPhase(study, phaseIdx, state.instruments);
 }
 
 function highlightBeat(phaseIdx, tick) {

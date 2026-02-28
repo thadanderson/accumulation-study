@@ -13,9 +13,9 @@
  * All API accessed through the global `Vex.Flow.*`.
  */
 
-// 'C4' → 'c/4',  'C5' → 'c/5'
+// 'C4'→'c/4', 'C#4'→'c#/4', 'Bb4'→'bb/4'
 function labelToVexKey(label) {
-  return label[0].toLowerCase() + '/' + label.slice(-1);
+  return label.slice(0, -1).toLowerCase() + '/' + label.slice(-1);
 }
 
 class NotationRenderer {
@@ -33,8 +33,9 @@ class NotationRenderer {
    *
    * @param {AccumulationStudy} study
    * @param {number}            phaseIdx
+   * @param {string[]}          instruments  Optional per-performer instrument IDs
    */
-  renderPhase(study, phaseIdx) {
+  renderPhase(study, phaseIdx, instruments = []) {
     if (typeof Vex === 'undefined') {
       console.warn('[NotationRenderer] VexFlow not loaded — skipping notation');
       return;
@@ -87,8 +88,14 @@ class NotationRenderer {
       for (let slot = 0; slot < phraseLen; slot++) {
         let sn;
         if (pattern && slot < pattern.length) {
-          // Active note in this performer's pattern
-          sn = new StaveNote({ keys: [labelToVexKey(pattern[slot].note)], duration: 'q' });
+          // Active note — transpose to written key for this performer's instrument
+          const semitones = (() => {
+            const id   = instruments[pi] || 'concert';
+            const inst = INSTRUMENTS.find(x => x.id === id);
+            return inst ? inst.semitones : 0;
+          })();
+          const displayNote = transposeNote(pattern[slot].note, semitones);
+          sn = new StaveNote({ keys: [labelToVexKey(displayNote)], duration: 'q' });
         } else {
           // Quarter rest — color varies by reason
           sn = new StaveNote({ keys: ['b/4'], duration: 'qr' });

@@ -77,3 +77,30 @@ function applySyncopation(phrase, probability) {
 function bpmToMs(bpm) {
   return (60 / bpm) * 1000;
 }
+
+// ── Instrument transpositions ─────────────────────────────────────────────
+
+const INSTRUMENTS = [
+  { id: 'concert', label: 'Concert pitch (C)',                             semitones:  0 },
+  { id: 'bb',      label: 'Bb  (trumpet, Bb clarinet, soprano/tenor sax)', semitones:  2 },
+  { id: 'eb',      label: 'Eb  (alto sax, bari sax, Eb clarinet)',         semitones:  9 },
+  { id: 'f',       label: 'F   (French horn, English horn)',               semitones:  7 },
+  { id: 'bb14',    label: 'Bb bass (bass clarinet, treble clef)',          semitones: 14 },
+];
+
+const _CHROMATIC     = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const _FLAT_TO_SHARP = { Db:'C#', Eb:'D#', Fb:'E', Gb:'F#', Ab:'G#', Bb:'A#', Cb:'B' };
+
+/**
+ * transposeNote — shift a note label by `semitones` half-steps.
+ * Input may use flats (Bb4) or sharps (A#4); output always uses sharps.
+ */
+function transposeNote(label, semitones) {
+  if (semitones === 0) return label;
+  const octave = parseInt(label.slice(-1), 10);
+  let pitch = label.slice(0, -1);
+  if (_FLAT_TO_SHARP[pitch]) pitch = _FLAT_TO_SHARP[pitch];
+  const idx   = _CHROMATIC.indexOf(pitch);
+  const total = idx + octave * 12 + semitones;
+  return _CHROMATIC[((total % 12) + 12) % 12] + Math.floor(total / 12);
+}
