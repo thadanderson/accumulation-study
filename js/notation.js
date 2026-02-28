@@ -88,7 +88,7 @@ class NotationRenderer {
         let sn;
         if (pattern && slot < pattern.length) {
           // Active note in this performer's pattern
-          sn = new StaveNote({ keys: [labelToVexKey(pattern[slot])], duration: 'q' });
+          sn = new StaveNote({ keys: [labelToVexKey(pattern[slot].note)], duration: 'q' });
         } else {
           // Quarter rest — color varies by reason
           sn = new StaveNote({ keys: ['b/4'], duration: 'qr' });
@@ -128,15 +128,20 @@ class NotationRenderer {
    * @param {object} phase  Current phase from study.phases
    * @param {number} beat   0-indexed beat within the phase
    */
-  highlightBeat(phase, beat) {
+  highlightBeat(phase, tick) {
     // Reset all notes to default color
     this._noteRefs.forEach(({ el }) => this._setNoteColor(el, ''));
 
     // Accent the active slot for each performing voice
     phase.performers.forEach(({ performerIndex: pi, pattern }) => {
       if (!pattern) return;
-      const slot = beat % pattern.length;
-      const ref  = this._noteRefs.find(r => r.pi === pi && r.slot === slot);
+      const totalDur = pattern.reduce((s, n) => s + n.dur, 0);
+      let t = tick % totalDur, acc = 0, noteIndex = 0;
+      for (let i = 0; i < pattern.length; i++) {
+        if (t < acc + pattern[i].dur) { noteIndex = i; break; }
+        acc += pattern[i].dur;
+      }
+      const ref = this._noteRefs.find(r => r.pi === pi && r.slot === noteIndex);
       if (ref) this._setNoteColor(ref.el, '#2563eb');
     });
   }
