@@ -94,6 +94,35 @@ section h2 {
 /* ── Phrase Builder ────────────────────────────────────────────── */
 #phrase-builder { display: flex; flex-direction: column; gap: 0.625rem; }
 
+.scale-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.scale-row label {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.scale-row select {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.8125rem;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--bg);
+  cursor: pointer;
+}
+
+.scale-row select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
 .row-label {
   display: flex;
   align-items: center;
@@ -134,6 +163,18 @@ section h2 {
   background: var(--accent-light);
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/* Black keys (sharps / flats) get a dark background */
+#note-palette button.black-key {
+  background: #374151;
+  border-color: #1f2937;
+  color: #f9fafb;
+}
+#note-palette button.black-key:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 #phrase-preview {

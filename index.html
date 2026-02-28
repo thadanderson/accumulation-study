@@ -42,6 +42,34 @@
             <button id="btn-clear-phrase"  type="button">Clear</button>
           </div>
         </div>
+        <div class="scale-row">
+          <label for="scale-select">Scale</label>
+          <select id="scale-select">
+            <optgroup label="Modes">
+              <option value="C Major" selected>C Major (Ionian)</option>
+              <option value="C Dorian">C Dorian</option>
+              <option value="C Phrygian">C Phrygian</option>
+              <option value="C Lydian">C Lydian</option>
+              <option value="C Mixolydian">C Mixolydian</option>
+              <option value="C Natural Minor">C Natural Minor (Aeolian)</option>
+              <option value="C Locrian">C Locrian</option>
+            </optgroup>
+            <optgroup label="Minor Variants">
+              <option value="C Harmonic Minor">C Harmonic Minor</option>
+              <option value="C Melodic Minor">C Melodic Minor</option>
+            </optgroup>
+            <optgroup label="Pentatonic">
+              <option value="C Major Pentatonic">C Major Pentatonic</option>
+              <option value="C Minor Pentatonic">C Minor Pentatonic</option>
+            </optgroup>
+            <optgroup label="Symmetric &amp; Other">
+              <option value="C Blues">C Blues</option>
+              <option value="C Whole Tone">C Whole Tone</option>
+              <option value="C Diminished">C Diminished (Octatonic)</option>
+              <option value="Chromatic">Chromatic</option>
+            </optgroup>
+          </select>
+        </div>
         <div id="note-palette"></div>
         <div id="phrase-preview"></div>
       </div>

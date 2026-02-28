@@ -29,6 +29,7 @@ let   notation = null;
 const elNumPerformers = document.getElementById('numPerformers');
 const elBpm           = document.getElementById('bpm');
 const elRepsPerStep   = document.getElementById('repsPerStep');
+const elScaleSelect   = document.getElementById('scale-select');
 const elNotePalette   = document.getElementById('note-palette');
 const elPhrasePreview = document.getElementById('phrase-preview');
 const elBtnRandom     = document.getElementById('btn-random-phrase');
@@ -47,16 +48,29 @@ const elNotationContainer = document.getElementById('notation-container');
 
 // ── Note Palette ──────────────────────────────────────────────────────────────
 
+function getCurrentScale() {
+  return SCALES[elScaleSelect.value] || SCALE;
+}
+
 function buildNotePalette() {
-  SCALE.forEach(label => {
+  elNotePalette.innerHTML = '';
+  getCurrentScale().forEach(label => {
     const btn = document.createElement('button');
     btn.type        = 'button';
     btn.textContent = label;
     btn.title       = `Add ${label} to phrase`;
+    // Accidentals (sharps / flats) have length > 2: C#4, Db4, Bb4, etc.
+    if (label.length > 2) btn.classList.add('black-key');
     btn.addEventListener('click', () => addNote(label));
     elNotePalette.appendChild(btn);
   });
 }
+
+elScaleSelect.addEventListener('change', () => {
+  state.phrase = [];
+  buildNotePalette();
+  renderPhrasePreview();
+});
 
 function addNote(label) {
   if (state.phrase.length >= MAX_PHRASE) return;
@@ -97,7 +111,7 @@ function renderPhrasePreview() {
 
 elBtnRandom.addEventListener('click', () => {
   const len = Math.floor(Math.random() * 5) + 3; // 3–7 notes
-  state.phrase = randomPhrase(len);
+  state.phrase = randomPhrase(len, getCurrentScale());
   renderPhrasePreview();
 });
 
@@ -111,7 +125,7 @@ elBtnClear.addEventListener('click', () => {
 elBtnGenerate.addEventListener('click', () => {
   // Auto-seed phrase if empty
   if (state.phrase.length === 0) {
-    state.phrase = randomPhrase(4);
+    state.phrase = randomPhrase(4, getCurrentScale());
     renderPhrasePreview();
   }
 
